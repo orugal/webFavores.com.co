@@ -23,6 +23,7 @@ if($accion == 0)//proceso de registro de personas
 		$salida = array("mensaje"=>"esta es una prueba",
 						"continuar"=>0,
 						"datos"=>array());
+		echo json_encode($salida);
 }
 else if($accion == 1)//proceso de registro de personas
 {
@@ -62,6 +63,7 @@ else if($accion == 1)//proceso de registro de personas
 						"datos"=>array());
 		}
 	}
+	echo json_encode($salida);
 }
 else if($accion == 2)//proceso de login
 {
@@ -76,17 +78,55 @@ else if($accion == 2)//proceso de login
 	}
 	else
 	{
-		$salida = array("mensaje"=>"Usuario correcto",
+		$salida = array("mensaje"=>"Bienvenido a Favores.com.co, será redirigido al home.",
 						    "continuar"=>1,
 						    "datos"=>$queryVerifica[0]);
 	}
+	echo json_encode($salida);
+}
+else if($accion == 3)//servicios app móvil
+{
+	$idServiciosDB = 1314;
+	$queryRestante = "";
+	if(isset($idServicio))
+	{
+		$queryRestante = " AND id=".$idServicio;
+	}
+	//realizo un query para traer la información de los servicios a mostrar en el home
+	$query   = sprintf("SELECT * FROM principal WHERE id_padre=%s %s AND eliminado=0 AND visible=1 ORDER BY orden ASC",$idServiciosDB,$queryRestante);
+	$resultado	 = $db->GetAll($query);
+	$arregloN = array();
+	if(count($resultado) > 0)
+	{
+		foreach($resultado as $res)
+		{
+			$data = array("titulo"=>utf8_encode($res['titulo']),
+						  "id"=>$res['id'],
+						  "id_padre"=>$res['id_padre'],
+						  "foto"=>($res['imagen'] != "")?_DOMINIO."images/".$res['imagen']:_DOMINIO."images/diseno/sin.jpg",
+						  "resumen"=>utf8_encode($res['resumen']),
+						  "contenido"=>utf8_encode($res['contenido']),
+						  "contenidoSolo"=>utf8_encode(strip_tags($res['contenido'])));
+			array_push($arregloN,$data);
+		}
+		$salida = array("mensaje"=>"Se consultaron los servicios",
+						"continuar"=>1,
+						"datos"=>$arregloN);
+	}
+	else
+	{
+		$salida = array("mensaje"=>"No hay servicios disponibles en este momento.",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
+
+	echo json_encode($salida);
 }
 else
 {
 	$salida = array("mensaje"=>"No tiene acceso de ingresar a esta zona",
 					"continuar"=>0,
 					"datos"=>array());
+	echo json_encode($salida);
 }
-
-echo json_encode($salida);
 ?>

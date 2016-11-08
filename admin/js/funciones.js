@@ -95,14 +95,6 @@ function tiposid(id)
 		document.getElementById('descripcion').style.display = '';
 		document.getElementById('imagen').style.display = '';
 		document.getElementById('imagen1_preview').style.display = '';
-		document.getElementById('imagen2').style.display = '';
-		document.getElementById('mostrar_imagen2').style.display = '';
-		document.getElementById('imagen3').style.display = '';
-		document.getElementById('mostrar_imagen3').style.display = '';
-		document.getElementById('imagen4').style.display = '';
-		document.getElementById('mostrar_imagen4').style.display = '';
-		document.getElementById('imagen5').style.display = '';
-		document.getElementById('mostrar_imagen5').style.display = '';
 		document.getElementById('pie_imagen').style.display = 'none';
 		document.getElementById('keywords').style.display = 'none';
 		document.getElementById('notas').style.display = 'none';
@@ -562,6 +554,7 @@ function tiposid(id)
 		document.getElementById('titulo').style.display = '';
 		document.getElementById('imagen').style.display = '';
 		document.getElementById('resumen').style.display = '';
+		document.getElementById('descripcion').style.display = '';
 		document.getElementById('imagen1_preview').style.display = '';
 		document.getElementById('pie_imagen').style.display = 'none';
 		document.getElementById('keywords').style.display = 'none';
