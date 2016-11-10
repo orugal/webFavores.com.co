@@ -2,3 +2,11 @@ RewriteEngine On
 #ErrorDocument 404 /noPage.php
 
 RewriteRule ^home$ index.php?id=1
+RewriteRule ^servicio-olvidos$ index.php?id=1317
+RewriteRule ^servicio-tramites$ index.php?id=1318
+RewriteRule ^servicio-apoyo$ index.php?id=1319
+RewriteRule ^servicio-entregas$ index.php?id=1320
+RewriteRule ^servicios$ index.php?id=1314
+RewriteRule ^servicio-diligencias$ index.php?id=1321
+RewriteRule ^servicio-turistas$ index.php?id=1322
+RewriteRule ^servicio-comprasyregalos$ index.php?id=1323

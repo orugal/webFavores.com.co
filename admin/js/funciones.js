@@ -554,6 +554,8 @@ function tiposid(id)
 		document.getElementById('titulo').style.display = '';
 		document.getElementById('imagen').style.display = '';
 		document.getElementById('resumen').style.display = '';
+		document.getElementById('iva').style.display = '';
+		document.getElementById('partefabricante').style.display = '';
 		document.getElementById('descripcion').style.display = '';
 		document.getElementById('imagen1_preview').style.display = '';
 		document.getElementById('pie_imagen').style.display = 'none';

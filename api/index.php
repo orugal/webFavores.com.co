@@ -103,6 +103,8 @@ else if($accion == 3)//servicios app móvil
 			$data = array("titulo"=>utf8_encode($res['titulo']),
 						  "id"=>$res['id'],
 						  "id_padre"=>$res['id_padre'],
+						  "iva"=>$res['iva'],
+						  "ejemplo"=>$res['partefabricante'],
 						  "foto"=>($res['imagen'] != "")?_DOMINIO."images/".$res['imagen']:_DOMINIO."images/diseno/sin.jpg",
 						  "resumen"=>utf8_encode($res['resumen']),
 						  "contenido"=>utf8_encode($res['contenido']),
@@ -120,6 +122,25 @@ else if($accion == 3)//servicios app móvil
 						    "datos"=>array());
 	}
 
+	echo json_encode($salida);
+}
+
+else if($accion == 4)//info del usuario logueado
+{
+	$query = sprintf("SELECT * FROM usuarios WHERE idusuario=%s",$idusuario);
+	$resultado = $db->GetAll($query);
+	if(count($resultado) > 0)
+	{
+		$salida = array("mensaje"=>"Info del usuario",
+						    "continuar"=>1,
+						    "datos"=>$resultado[0]);
+	}
+	else
+	{
+		$salida = array("mensaje"=>"No hay infórmación del usuario",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
 	echo json_encode($salida);
 }
 else

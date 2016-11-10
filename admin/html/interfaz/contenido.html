@@ -504,21 +504,20 @@ else {?>
 		</tr>
 		<tr id="iva">
 			<td>
-				Iva
+				Formulario <span class="small">(Aplica s&oacute;lo para la app m&oacute;vil)</span>
 			</td>
 			<td class="celdas">
-				<select id="iva">
-					<option value="0" <?if($iva == 0){echo 'selected';}?>>0%</option>
-					<option value="10" <?if($iva == 10){echo 'selected';}?>>10%</option>
-					<option value="15" <?if($iva == 15){echo 'selected';}?>>15%</option>
-					<option value="16" <?if($iva == 16){echo 'selected';}?>>16%</option>
-					<option value="21" <?if($iva == 21){echo 'selected';}?>>21%</option>
+				<select id="iva" name="iva" class="form-control" >
+					<option value="1" <?if($iva == 1){echo 'selected';}?>>Form sin datos de origen y destino</option>
+					<option value="2" <?if($iva == 2){echo 'selected';}?>>Form con datos de origen</option>
+					<option value="3" <?if($iva == 3){echo 'selected';}?>>Form con datos de destino</option>
+					<option value="4" <?if($iva == 4){echo 'selected';}?>>Form con datos de de origen y destino</option>
 				</select>	
 			</td>
 		</tr>
 		<tr id="partefabricante">
 			<td>
-				Parte Fabricante
+				Ejemplos <span class="small">Aplica s&ocute;lo para app m&oacute;vil</span>
 			</td>
 			<td class="celdas">
 				<input type="text" class="form-control"  name="partefabricante" size="53" value="<? echo $partefabricante; ?>">
