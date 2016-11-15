@@ -8,6 +8,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type,x-prototype-version,x-requested-with');
 
+ini_set("display_errors", 0);
 require("../config/configuracion.php");
 require("../config/conexion_2.php");
 require("../core/funciones.class.php");
@@ -124,7 +125,6 @@ else if($accion == 3)//servicios app móvil
 
 	echo json_encode($salida);
 }
-
 else if($accion == 4)//info del usuario logueado
 {
 	$query = sprintf("SELECT * FROM usuarios WHERE idusuario=%s",$idusuario);
@@ -138,6 +138,92 @@ else if($accion == 4)//info del usuario logueado
 	else
 	{
 		$salida = array("mensaje"=>"No hay infórmación del usuario",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
+	echo json_encode($salida);
+}
+else if($accion == 5)//listado Solicitudes
+{
+	$resto = (isset($idSolicitud))?" AND idSolicitud=".$idSolicitud:"";
+	$query = sprintf("SELECT * FROM solicitudes WHERE idUsuario=%s %s",$usuario,$resto);
+	$resultado = $db->GetAll($query);
+	$vueltas 	=	array();
+	if(count($resultado) > 0)
+	{
+		//recorro el arreglo para ordenar la información
+		foreach($resultado as $orden)
+		{
+			$pedazos1			=  	explode(" ",$orden['fechaFavor']);
+			$pedazos2 			=   explode("-",$pedazos1[0]);
+			$fechaFavor 		=	$pedazos2[2]." de ".$funciones->TraducirMes($pedazos2[1])." de ".$pedazos2[0];
+
+			$pedazos3			=  	explode(" ",$orden['fechaFavor']);
+			$pedazos4 			=   explode("-",$pedazos3[0]);
+			$fechaSolicitud 	=	$pedazos4[2]." de ".$funciones->TraducirMes($pedazos4[1])." de ".$pedazos4[0];
+
+			$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$orden['servicio'],'titulo');
+			$estado				=	"";	
+
+			//var_dump($dataServicio[0]['titulo']);
+
+			if($orden['estado'] == 1)
+			{
+				$estado = "Recibido";
+			}
+
+
+			$ajuste		=	array("idSolicitud"=>$orden['idSolicitud'],
+								  "idServicio"=>$orden['servicio'],
+								  "servicio"=>utf8_encode($dataServicio[0]['titulo']),
+								  "fechaFavor"=>$fechaFavor,
+								  "fechaSolicitud"=>$fechaSolicitud,
+								  "texto"=>$orden["texto"],
+								  "estado"=>$estado,
+								  "costo"=>$orden["costo"],
+								  "direccion1"=>$orden["direccion1"],
+								  "telefono1"=>$orden["telefono1"],
+								  "persona1"=>$orden["persona1"],
+								  "direccion2"=>$orden["direccion2"],
+								  "telefono2"=>$orden["telefono2"],
+								  "persona2"=>$orden["persona2"],
+								  "form"=>$orden["form"]);
+
+			array_push($vueltas,$ajuste);
+		}
+		$salida = array("mensaje"=>"Solicitudes consultadas",
+						    "continuar"=>1,
+						    "datos"=>$vueltas);
+	}
+	else
+	{
+		$salida = array("mensaje"=>"No hay solicitudes para mostrar",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
+	echo json_encode($salida);
+
+}
+else if($accion == 6)//insertar solicitudes Solicitudes
+{
+	//die($form);
+	if($form == 1)//formulario sencillo
+	{
+		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,idUsuario,texto,form,fecha,servicio) VALUES ('%s','%s','%s','%s','%s','%s')",
+							 $fecha,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio);
+	}
+	$resultado = $db->Execute($queryInsert) or die($queryInsert);
+	$idInsertado = $db->Insert_ID();
+
+	if($resultado)
+	{
+		$salida = array("mensaje"=>"Su solicitud ha sido enviada, pronto estaremos en contacto con usted. El número de su solicitud es: ".$idInsertado,
+						    "continuar"=>1,
+						    "datos"=>$idInsertado);
+	}
+	else
+	{
+		$salida = array("mensaje"=>"La solicitud no ha podido ser enviada, por favor intente de nuevo má tarde.",
 						    "continuar"=>0,
 						    "datos"=>array());
 	}
