@@ -179,6 +179,8 @@ else if($accion == 5)//listado Solicitudes
 								  "servicio"=>utf8_encode($dataServicio[0]['titulo']),
 								  "fechaFavor"=>$fechaFavor,
 								  "fechaSolicitud"=>$fechaSolicitud,
+								  "hora"=>$orden["horaFavor"],
+								  "prestador"=>$orden["idPrestador"],
 								  "texto"=>$orden["texto"],
 								  "estado"=>$estado,
 								  "costo"=>$orden["costo"],
@@ -211,7 +213,7 @@ else if($accion == 6)//insertar solicitudes Solicitudes
 	$mensaje_armado	 =	'Se ha enviado una solicitud por medio de la app m&oacute;vil con la siguiente informaci&oacute;n:<br><br><br>';
 	if($form == 1)//formulario sencillo
 	{
-		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,idUsuario,texto,form,fecha,servicio) VALUES ('%s','%s','%s','%s','%s','%s')",$fecha,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio);
+		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,horaFavor,idUsuario,texto,form,fecha,servicio) VALUES ('%s','%s','%s','%s','%s','%s','%s')",$fecha,$hora,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio);
 
 		$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$servicio,'titulo');
 		$dataUsuario		=	$funciones->consultaUniversal("usuarios"," idusuario=".$usuario,'*');
@@ -220,12 +222,13 @@ else if($accion == 6)//insertar solicitudes Solicitudes
 		$mensaje_armado	.= '<b>Nombres y apellidos:</b> '.$dataUsuario[0]['nombres'].' '.$dataUsuario[0]['apellidos'].'<br>';
 		$mensaje_armado	.= '<b>Correo Electr&oacute;nico:</b> '.$dataUsuario[0]['email'].'<br>';
 		$mensaje_armado	.= '<b>Tipo de servicio:</b> '.utf8_encode($dataServicio[0]['titulo']).'<br>';
-		$mensaje_armado	.= '<b>Fecha y hora del favor: </b>'.$fecha.'<br>';
+		$mensaje_armado	.= '<b>Fecha del favor: </b>'.$fecha.'<br>';
+		$mensaje_armado	.= '<b>Hora del favor: </b>'.$hora.'<br>';
 		$mensaje_armado	.= '<b>Detalle del favor:</b> '.$texto.'<br>';
 	}
-	elseif($form == 2)//form solo datos destino
+	elseif($form == 2)//form solo datos origen
 	{
-		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,idUsuario,texto,form,fecha,servicio,persona1,direccion1,telefono1) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')",$fecha,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio,$persona1,$direccion1,$telefono1);
+		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,horaFavor,idUsuario,texto,form,fecha,servicio,persona1,direccion1,telefono1) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",$fecha,$hora,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio,$persona1,$direccion1,$telefono1);
 
 		$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$servicio,'titulo');
 		$dataUsuario		=	$funciones->consultaUniversal("usuarios"," idusuario=".$usuario,'*');
@@ -233,10 +236,28 @@ else if($accion == 6)//insertar solicitudes Solicitudes
 		$mensaje_armado	.= '<b>Nombres y apellidos:</b> '.$dataUsuario[0]['nombres'].' '.$dataUsuario[0]['apellidos'].'<br>';
 		$mensaje_armado	.= '<b>Correo Electr&oacute;nico:</b> '.$dataUsuario[0]['email'].'<br>';
 		$mensaje_armado	.= '<b>Tipo de servicio:</b> '.utf8_encode($dataServicio[0]['titulo']).'<br>';
-		$mensaje_armado	.= '<b>Fecha y hora del favor: </b>'.$fecha.'<br>';
-		$mensaje_armado	.= '<b>Dirección de destino: </b>'.$direccion1.'<br>';
+		$mensaje_armado	.= '<b>Fecha del favor: </b>'.$fecha.'<br>';
+		$mensaje_armado	.= '<b>Hora del favor: </b>'.$hora.'<br>';
+		$mensaje_armado	.= '<b>Dirección de origen: </b>'.$direccion1.'<br>';
 		$mensaje_armado	.= '<b>Persona de contacto: </b>'.$persona1.'<br>';
 		$mensaje_armado	.= '<b>Teléfono de contacto: </b>'.$telefono1.'<br>';
+		$mensaje_armado	.= '<b>Detalle del favor:</b> '.$texto.'<br>';
+	}
+	elseif($form == 3)//form solo datos destino
+	{
+		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,horaFavor,idUsuario,texto,form,fecha,servicio,persona2,direccion2,telefono2) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",$fecha,$hora,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio,$persona2,$direccion2,$telefono2);
+
+		$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$servicio,'titulo');
+		$dataUsuario		=	$funciones->consultaUniversal("usuarios"," idusuario=".$usuario,'*');
+
+		$mensaje_armado	.= '<b>Nombres y apellidos:</b> '.$dataUsuario[0]['nombres'].' '.$dataUsuario[0]['apellidos'].'<br>';
+		$mensaje_armado	.= '<b>Correo Electr&oacute;nico:</b> '.$dataUsuario[0]['email'].'<br>';
+		$mensaje_armado	.= '<b>Tipo de servicio:</b> '.utf8_encode($dataServicio[0]['titulo']).'<br>';
+		$mensaje_armado	.= '<b>Fecha del favor: </b>'.$fecha.'<br>';
+		$mensaje_armado	.= '<b>Hora del favor: </b>'.$hora.'<br>';
+		$mensaje_armado	.= '<b>Dirección de destino: </b>'.$direccion2.'<br>';
+		$mensaje_armado	.= '<b>Persona de contacto: </b>'.$persona2.'<br>';
+		$mensaje_armado	.= '<b>Teléfono de contacto: </b>'.$telefono2.'<br>';
 		$mensaje_armado	.= '<b>Detalle del favor:</b> '.$texto.'<br>';
 	}
 
