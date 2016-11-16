@@ -58,7 +58,7 @@ define('_SMTP_USER'										,'info@wannabe.com.co');
 define('_SMTP_PASS'										,'Jg$E3D+u');
 define('_ES_HTML'										,true);
 //Correo del administrador
-define('_MAIL_ADMIN'									,'info@wannabe.com.co');
+define('_MAIL_ADMIN'									,'kyo20052@gmail.com,Embers27@hotmail.com');
 
 
 /*TABLAS DE LA BASE DE DATOS*/
