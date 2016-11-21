@@ -260,6 +260,28 @@ else if($accion == 6)//insertar solicitudes Solicitudes
 		$mensaje_armado	.= '<b>Teléfono de contacto: </b>'.$telefono2.'<br>';
 		$mensaje_armado	.= '<b>Detalle del favor:</b> '.$texto.'<br>';
 	}
+	elseif($form == 4)//form datos origen y destino
+	{
+		$queryInsert = sprintf("INSERT INTO solicitudes (fechaFavor,horaFavor,idUsuario,texto,form,fecha,servicio,persona1,direccion1,telefono1,persona2,direccion2,telefono2) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",$fecha,$hora,$usuario,$texto,$form,date("Y-m-d H:i:s"),$servicio,$persona1,$direccion1,$telefono1,$persona2,$direccion2,$telefono2);
+
+		$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$servicio,'titulo');
+		$dataUsuario		=	$funciones->consultaUniversal("usuarios"," idusuario=".$usuario,'*');
+
+		$mensaje_armado	.= '<b>Nombres y apellidos:</b> '.$dataUsuario[0]['nombres'].' '.$dataUsuario[0]['apellidos'].'<br>';
+		$mensaje_armado	.= '<b>Correo Electr&oacute;nico:</b> '.$dataUsuario[0]['email'].'<br>';
+		$mensaje_armado	.= '<b>Tipo de servicio:</b> '.utf8_encode($dataServicio[0]['titulo']).'<br>';
+		$mensaje_armado	.= '<b>Fecha del favor: </b>'.$fecha.'<br>';
+		$mensaje_armado	.= '<b>Hora del favor: </b>'.$hora.'<br><br>';
+		$mensaje_armado	.= '<b>DATOS DE ORIGEN</b><br><br>';
+		$mensaje_armado	.= '<b>Dirección: </b>'.$direccion1.'<br>';
+		$mensaje_armado	.= '<b>Persona de contacto: </b>'.$persona1.'<br>';
+		$mensaje_armado	.= '<b>Teléfono de contacto: </b>'.$telefono1.'<br><br>';
+		$mensaje_armado	.= '<b>DATOS DE DESTINO</b><br><br>';
+		$mensaje_armado	.= '<b>Dirección: </b>'.$direccion2.'<br>';
+		$mensaje_armado	.= '<b>Persona de contacto: </b>'.$persona2.'<br>';
+		$mensaje_armado	.= '<b>Teléfono de contacto: </b>'.$telefono2.'<br>';
+		$mensaje_armado	.= '<b>Detalle del favor:</b> '.$texto.'<br>';
+	}
 
 	$resultado = $db->Execute($queryInsert) or die($queryInsert);
 	$idInsertado = $db->Insert_ID();
