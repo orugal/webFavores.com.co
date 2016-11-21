@@ -80,6 +80,11 @@ else if($accion == 2)//proceso de login
 	}
 	else
 	{
+		if(isset($codigoCelular))
+		{
+			//actualizo el código del celular
+			$updateCelular = $db->execute(sprintf("UPDATE usuarios set codigoCelular='%s' WHERE idusuario=%s",$codigoCelular,$queryVerifica[0]['idusuario']));
+		}
 		$salida = array("mensaje"=>"Bienvenido a Favores.com.co, será redirigido al home.",
 						    "continuar"=>1,
 						    "datos"=>$queryVerifica[0]);
@@ -306,6 +311,53 @@ else if($accion == 6)//insertar solicitudes Solicitudes
 						    "datos"=>array());
 	}
 	echo json_encode($salida);
+}
+elseif($accion == 7)
+{
+	define( 'API_ACCESS_KEY', 'AIzaSyDATt8X74QH8JMuF-oJMiP7mz7cupavmjY' );
+	$registrationId = array('APA91bE4sZQGdLWEefOfl-nFMXcRFc0drzsUZv08E7IqL6MvXKEOFcGlCdsR9sXk9firIQlYENCOPXL7d3NwhkZePhjidHkRz-VYah4JeQTZR2vWxrj2ipLQG5j7DcmO6Mb65fDTPz8VPV3sRbKin76sI08jfEY_1A');
+	//$registrationId = consultaGCMReg();
+	$msg = array
+	(
+		'message' 	=> "Prueba del mensaje",
+		'title'		=> "Titulo del mensaje",
+		'subtitle'	=> '',
+		'tickerText'	=> '',
+		'vibrate'	=> 1,
+		'sound'		=> 1,
+		'largeIcon'	=> 'large_icon',
+		'smallIcon'	=> 'small_icon'
+	);
+	//$msg = "please note this..";
+	$fields = array
+	(
+		'registration_ids' 	=> $registrationId,
+		'data'			=> $msg
+	);
+	 
+	$headers = array
+	(
+		'Authorization: key='.API_ACCESS_KEY,
+		'Content-Type: application/json',
+	        'delay_while_idle: true',
+	);
+	 
+	try{
+	    $ch = curl_init();
+	curl_setopt( $ch,CURLOPT_URL, 'https://gcm-http.googleapis.com/gcm/send' );
+	curl_setopt( $ch,CURLOPT_POST, true );
+	curl_setopt( $ch,CURLOPT_HTTPHEADER, $headers );
+	curl_setopt( $ch,CURLOPT_RETURNTRANSFER, true );
+	curl_setopt( $ch,CURLOPT_SSL_VERIFYPEER, false );
+	curl_setopt( $ch,CURLOPT_POSTFIELDS, json_encode( $fields ) );
+	$result = curl_exec($ch );
+	curl_close( $ch );
+	echo $result;
+	}
+	catch(Exception $e){
+	    echo $e;
+	    echo "inside catch";
+	}
 }
 else
 {
