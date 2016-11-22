@@ -23,7 +23,7 @@ if(isset($_POST['entrar']))
 	if(count($errores) == 0)
 	{
 		//realizo el queri que me autenticara el usuario
-		$query	=	sprintf("SELECT * FROM usuarios WHERE username='%s' AND contrasena = sha1('%s') and perfil=1",$username,$pass);
+		$query	=	sprintf("SELECT * FROM usuarios WHERE username='%s' AND contrasena = sha1('%s') and perfil in (1,3)",$username,$pass);
 		//ejecuto la consulta
 		$result	=	$db->Execute($query) or die("No se pudo realizar la consulta del usuario");
 		//verifico que me retorne datos la consulta

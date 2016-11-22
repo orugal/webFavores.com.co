@@ -1111,6 +1111,7 @@ class Funciones
      */
     function obtenerTitulo($id)
     {
+    	//die("asdasdasd");
     	$titulo	=	$this->consultaUniversal("principal"," id=".$id,'titulo');
     	return $titulo[0]['titulo'];
     }

@@ -6,7 +6,7 @@ global $db;
 //id id
 if(isset($_SESSION['login']))
 {
-	if($_SESSION['login']['perfil'] == 1)//administrador
+	if($_SESSION['login']['perfil'] == 1 or $_SESSION['login']['perfil'] == 3)//administrador
 	{
 		$id				=	(isset($_GET['id']))?$_GET['id']:1;		
 	}
@@ -15,7 +15,7 @@ if(isset($_SESSION['login']))
 		$id				=	(isset($_GET['id']))?$_SESSION['login']['telefono']:$_SESSION['login']['telefono'];
 	}
 }
-$query_sites	=	$funciones->infoId($_SESSION['login']['telefono']);
+//$query_sites	=	$funciones->infoId($_SESSION['login']['telefono']);
 
 $info_id		=	$funciones->infoId($id);
 $fecha			=	date("Y-m-d H:i:s");

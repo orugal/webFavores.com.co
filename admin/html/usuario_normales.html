@@ -81,7 +81,7 @@ function generarClave(id_user,accion,id)
 		</td>
 		<td colspan="4" align="center">
 			<strong>
-				<a href="appadmin/nuevo_user.php?new" rel='shadowbox; width=600px;height=400px'>Nuevo Usuario</a>
+				<a href="<?php echo _DOMINIO?>admin/index.php?id=1326&new" rel='shadowbox; width=600px;height=400px'>Nuevo Usuario</a>
 			</strong>
 		</td>
 	</tr>
@@ -112,7 +112,7 @@ function generarClave(id_user,accion,id)
 				echo "<td>".$datos['apellidos']."</td>";
 				echo "<td align='center'>".$datos['email']."</td>";
 				echo "<td align='center'>
-							<a href='appadmin/edita_user.php?edit&user=".$datos['idusuario']."' rel='shadowbox; width=600px;height=400px'>Editar</a> | 
+							<a href='"._DOMINIO."admin/index.php?id=1326&edit&user=".$datos['idusuario']."' rel='shadowbox; width=600px;height=400px'>Editar</a> | 
 							<a style='cursor:pointer' onClick=\"generarClave(".$datos['idusuario'].",'".base64_encode($accion)."',".$id.")\" title='Generar Clave'>Genera Clave</a>
 						</td>";
 				echo "<td align='center'><input type='checkbox' name='elim[]' value='".$datos['idusuario']."'></td>";

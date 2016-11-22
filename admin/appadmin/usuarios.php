@@ -89,23 +89,23 @@ if($accion == 1)//listo usuarios del aplicativos
 			$query_borrado	=	$db->Execute(sprintf("DELETE FROM usuarios WHERE idusuario in(%s)",implode(',',$_POST['elim']))) or die(sprintf("DELETE FROM usuarios WHERE idusuario in(%s)",implode($_POST['elim'])));
 			if($query_borrado)
 			{
-				echo "<script>alert('Los usuarios seleccionados se han borrado con exito');document.location='index.php?id=".$id."&accion=".$_GET['accion']."'</script>";
+				echo "<script>alert('Los usuarios seleccionados se han borrado con exito');document.location='index.php?id=".$id."'</script>";
 			}
 			else
 			{
-				echo "<script>alert('Los usuarios seleccionados no se han borrado');</script>";
+				echo "<script>alert('Los usuarios seleccionados no se han borrado');document.location='index.php?id=".$id."'</script>";
 			}
 		}
 	 }
 	 
 	 if(!empty($filtro))
 	 {
-	 	 $array_users	=	$db->GetAll(sprintf("SELECT * FROM usuarios WHERE  %s AND perfil=2",$filtro)) or die(sprintf("SELECT * FROM usuarios WHERE  %s",$filtro));
+	 	 $array_users	=	$db->GetAll(sprintf("SELECT * FROM usuarios WHERE  %s AND perfil in(1,3) ",$filtro)) or die(sprintf("SELECT * FROM usuarios WHERE  %s",$filtro));
 	 }
 	 else
 	 {
 	 	//die("aca");
-		 $array_users	=	$db->GetAll(sprintf("SELECT * FROM usuarios WHERE perfil=2"));// or die(sprintf("SELECT * FROM usuarios WHERE perfil=2"));
+		 $array_users	=	$db->GetAll(sprintf("SELECT * FROM usuarios WHERE perfil in(1,3) "));// or die(sprintf("SELECT * FROM usuarios WHERE perfil=2"));
 		// echo sprintf("SELECT * FROM usuarios");
 	 }
 	 ///var_dump($array_users);
@@ -244,9 +244,10 @@ else//muestra mensaje de error
 			$mensaje			.=	"Los datos de acceso son los siguientes<br><br>";
 			$mensaje			.=	"Usuario: ".$query_datos_user->fields['username']."<br>";
 			$mensaje			.=	"Contraseña: ".$cad."<br><br>";
-			$mensaje			.=	"Para Acceder a la información debe hacerlo en la siguiente url: <a href='"._DOMINIO."/afiliados'>click aquí</a><br><br>";
+			$mensaje			.=	"Para Acceder a la información debe hacerlo en la siguiente url: <a href='"._DOMINIO."/admin/'>click aquí</a><br><br>";
 			$para				 =	$query_datos_user->fields['email'];
-			if($funciones->SendMAIL($para,$asunto,$mensaje,"Asignación de Contraseña",_MAIL_ADMIN,_NOMBRE_EMPRESA) == 1)
+
+			if($funciones->SendMAIL($para,$asunto,$mensaje,"Asignación de Contraseña",_SMTP_USER,_NOMBRE_EMPRESA) == 1)
 			{
 				//echo "aca";
 				echo "<script>alert('Se envio la contrase\u00f1a al correo : ".$query_datos_user->fields['email']."');document.location='index.php?id=".$id."&accion=".base64_encode(1)."'</script>";
