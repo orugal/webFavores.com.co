@@ -140,7 +140,7 @@ elseif(isset($_GET['new']))
 				</select>
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="nombreLista">Correo electrr&oacute;nico</label>
+				<label class="control-label" for="nombreLista">Correo electr&oacute;nico</label>
 				<input type="text" class="form-control" name="email" value="<?=$email ?>">
 			</div>
 			<div class="form-group">
