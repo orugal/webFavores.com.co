@@ -27,7 +27,7 @@ define('_RUTA_ABSOLUTA'										,$ruta_absoluta);		//Ruta relativa del portal e
 define('_PLANTILLAS'	                                 	,$ruta_absoluta.'html/');			//Url desde el navegador
 define('_NOMBRE_EMPRESA'	                                ,'Favores.com.co');			//Url desde el navegador
 //define('_DOMINIO'	                     		           ,'http://192.168.1.14/CMSorugal/');			//local
-define('_DOMINIO'	                     		           ,'http://www.wannabe.com.co/favores.com.co/');			//local
+define('_DOMINIO'	                     		           ,'http://192.168.1.10/favores.com.co/');			//local
 
 
 define('_ENTORNO',											"desarrollo");//desarrollo - produccion
@@ -43,11 +43,11 @@ define('_ID_AFILIADOS',1676);//en menu principal
 //Nombre del hosting
 define('_HOST'											,'localhost');
 //Usuario base de datos
-define('_USER'											,'orugal_pruebas');
+define('_USER'											,'root');
 //Contraseña del usuario
-define('_PASS'											,'Jg$E3D+u');
+define('_PASS'											,'');
 //base de datos
-define('_DB'											,'orugal_favores');
+define('_DB'											,'favores');
 
 //DATOS DE ENVIO DE CORREOS
 define('_DIR_PLUGIN'									,'core/phpmailer/');

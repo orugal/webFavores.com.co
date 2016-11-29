@@ -171,11 +171,36 @@ else if($accion == 5)//listado Solicitudes
 			$dataServicio		=	$funciones->consultaUniversal("principal"," id=".$orden['servicio'],'titulo');
 			$estado				=	"";	
 
+			$transacciones = $db->GetAll(sprintf("SELECT * FROM transacciones t 
+										INNER JOIN usuarios u ON u.idusuario=t.idUsuario
+										WHERE idSolicitud=%s",$orden['idSolicitud']));
+			$dataTr				=	array();
+			foreach($transacciones as $tr)
+			{
+				$pedazos111			=  	explode(" ",$tr['fecha']);
+				$pedazos21 			=   explode("-",$pedazos11[0]);
+				$fechaTr 		=	$pedazos21[2]." de ".$funciones->TraducirMes($pedazos21[1])." de ".$pedazos21[0];
+				$arra = array("idTransaccion"=>$tr['idTransaccion'],
+							  "idSolicitud"=>$tr['idSolicitud'],
+							  "idEstado"=>$tr['idEstado'],
+							  "fecha"=>$fechaTr,
+							  "textoTransaccion"=>$funciones->deduceEstado($tr['idSolicitud']),
+							  "textoTransaccion"=>$tr['textoTransaccion']);
+				array_push($dataTr,$arra);
+			}
+
 			//var_dump($dataServicio[0]['titulo']);
 
-			if($orden['estado'] == 1)
+			$estado = $funciones->deduceEstado($orden['estado']);
+			
+			if($orden["idPrestador"] > 0)
 			{
-				$estado = "Recibido";
+				$queryInfoUsuario = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE idusuario=%s",$orden["idPrestador"]));
+				$dataPrestador = $queryInfoUsuario[0];
+			}
+			else
+			{
+				$dataPrestador = array();
 			}
 
 
@@ -186,8 +211,10 @@ else if($accion == 5)//listado Solicitudes
 								  "fechaSolicitud"=>$fechaSolicitud,
 								  "hora"=>$orden["horaFavor"],
 								  "prestador"=>$orden["idPrestador"],
+								  "dataPrestador"=>$dataPrestador,
 								  "texto"=>$orden["texto"],
-								  "estado"=>$estado,
+								  "estado"=>$orden["estado"],
+								  "estadoText"=>$estado,
 								  "costo"=>$orden["costo"],
 								  "direccion1"=>$orden["direccion1"],
 								  "telefono1"=>$orden["telefono1"],
@@ -195,7 +222,8 @@ else if($accion == 5)//listado Solicitudes
 								  "direccion2"=>$orden["direccion2"],
 								  "telefono2"=>$orden["telefono2"],
 								  "persona2"=>$orden["persona2"],
-								  "form"=>$orden["form"]);
+								  "form"=>$orden["form"],
+								  "transacciones"=>$dataTr);
 
 			array_push($vueltas,$ajuste);
 		}
@@ -358,6 +386,147 @@ elseif($accion == 7)
 	    echo $e;
 	    echo "inside catch";
 	}
+}
+elseif($accion == 8)//envio de preguntas
+{
+	//inserto la nueva transacción
+	$queryTransaccion	=	sprintf("INSERT INTO transacciones (idSolicitud,idUsuario,idEstado,fecha,textoTransaccion) 
+											VALUES('%s','%s','%s','%s','%s')",
+											$idSolicitud,
+											$usuario,
+											$estado,
+											date("Y-m-d H:i:s"),
+											$pregunta);
+	$resultadoTra		=	$db->Execute($queryTransaccion);
+
+	if($resultadoTra > 0)
+	{
+		//saco la información de la solicitud que se va a gestionar
+		$query = sprintf("SELECT * FROM solicitudes WHERE idSolicitud=%s",$idSolicitud);
+		$resultado = $db->GetAll($query);
+		//debo detectar a quién le debo enviar el mail de información.
+		if($resultado[0]['idPrestador'] != 0)
+		{
+			//sonsulto la data del usuario
+			$usuarioData = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE idusuario='%s'",$resultado[0]['idPrestador']));
+			$paraQuien =	$usuarioData[0]['email'];
+		}
+		else
+		{
+			$paraQuien =	_MAIL_ADMIN;
+		}
+
+		$mensaje_armado	 = 'Han realizado una pregunta al respecto del servicio.<br><br>';
+		$mensaje_armado	.= '<b>Pregunta:</b> '.$pregunta.'<br>';
+		//realizo el envio de la solicitid vía correo
+		$asunto			 =	'Pregunta al respecto de la solicitud '.$idSolicitud.' - '._NOMBRE_EMPRESA;
+		
+		$envio			 =	$funciones->SendMAIL($paraQuien,$asunto,$mensaje_armado,'',_SMTP_USER,_NOMBRE_EMPRESA);
+		$salida = array("mensaje"=>"Su pregunta ha sido enviada con éxito, pronto estaremos en contacto con usted.",
+						    "continuar"=>1,
+						    "datos"=>array());
+	}
+	else
+	{
+		$salida = array("mensaje"=>"Su pregunta no ha podido ser enviada, intende de nuevo más tarde.",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
+
+	echo json_encode($salida);
+
+}
+
+elseif($accion == 9)//Aprueba o rechaza el servicio
+{
+	$query = sprintf("SELECT * FROM solicitudes WHERE idSolicitud=%s",$idSolicitud);
+	$resultado = $db->GetAll($query);
+
+	//inserto la nueva transacción
+	$queryEstado	=	sprintf("UPDATE solicitudes SET estado=%s WHERE idSolicitud=%s",$estado,$idSolicitud);
+	$resultadoTra		=	$db->Execute($queryEstado);
+
+	if($resultadoTra > 0)
+	{
+
+		$titulo 		 = ($estado == 6)?"Solicitud Nro: ".$idSolicitud." rechazada por el usuario":"Solicitud Nro: ".$idSolicitud." aprobada por el usuario"; 
+
+		$funciones->insertaTransaccion($resultado[0]['estado'],$estado,$idSolicitud,$usuario,$titulo);
+
+		//saco la información de la solicitud que se va a gestionar
+		$query = sprintf("SELECT * FROM solicitudes WHERE idSolicitud=%s",$idSolicitud);
+		$resultado = $db->GetAll($query);
+		//debo detectar a quién le debo enviar el mail de información.
+		if($resultado[0]['idPrestador'] != 0)
+		{
+			//sonsulto la data del usuario
+			$usuarioData = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE idusuario='%s'",$resultado[0]['idPrestador']));
+			$paraQuien =	$usuarioData[0]['email'];
+		}
+		else
+		{
+			$paraQuien =	_MAIL_ADMIN;
+		}
+
+		 	
+
+		if($estado == 6)
+		{
+			$mensaje_armado	 = 'El usuario ha enviado una respuesta de rechazo a la solicitud que ha estado gestionando.<br><br>';
+			$mensaje_armado	.= '<b>ID SOLICITUD:</b> '.$idSolicitud.'<br>';
+		}
+		else
+		{
+			$mensaje_armado	 = 'El usuario ha enviado una respuesta de aprobación a la solicitud que ha estado gestionando, es necesario enviar un persona lo antes posible.<br><br>';
+			$mensaje_armado	.= '<b>ID SOLICITUD:</b> '.$idSolicitud.'<br>';
+		}
+
+
+		//realizo el envio de la solicitid vía correo
+		$asunto			 =	$titulo." - "._NOMBRE_EMPRESA;
+		
+		$envio			 =	$funciones->SendMAIL($paraQuien,$asunto,$mensaje_armado,'',_SMTP_USER,_NOMBRE_EMPRESA);
+		$salida = array("mensaje"=>"Su solicitud ha sido enviada exitosamente, pronto estaremos en contacto con usted.",
+						    "continuar"=>1,
+						    "datos"=>array());
+	}
+	else
+	{
+		$salida = array("mensaje"=>"Su solicitud no ha podido ser procesada, intende de nuevo más tarde.",
+						    "continuar"=>0,
+						    "datos"=>array());
+	}
+
+	echo json_encode($salida);
+
+}
+elseif($accion == 10)//contacto
+{
+	//envio el mail
+	$mensaje_armado	 = 'Se ha enviado un mensaje de contacto por medio del formulario de la app móvil con la siguiente información:.<br><br>';
+	$mensaje_armado	.= '<b>Nombre:</b> '.$nombre.'<br>';
+	$mensaje_armado	.= '<b>Correo electrónico:</b> '.$email.'<br>';
+	$mensaje_armado	.= '<b>Teléfono:</b> '.$telefono.'<br>';
+	$mensaje_armado	.= '<b>Mensaje:</b> '.$mensaje.'<br>';
+	//realizo el envio de la solicitid vía correo
+	$asunto			 =	'Mensaje de contacto - '._NOMBRE_EMPRESA;
+	
+	$envio			 =	$funciones->SendMAIL(_MAIL_ADMIN,$asunto,$mensaje_armado,'',_SMTP_USER,_NOMBRE_EMPRESA);
+	if($envio == 1)
+	{
+		$salida = array("mensaje"=>"Gracias por contactarnos, pronto estaremos en contacto con usted.",
+						    "continuar"=>1,
+						    "datos"=>array());
+
+	}
+	else
+	{
+		$salida = array("mensaje"=>"No se ha podido enviar el mensaje, intente de nuevo más tarde.",
+						    "continuar"=>0,
+						    "datos"=>array());
+
+	}
+	echo json_encode($salida);
 }
 else
 {
