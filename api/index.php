@@ -510,9 +510,9 @@ elseif($accion == 10)//contacto
 	$mensaje_armado	.= '<b>Mensaje:</b> '.$mensaje.'<br>';
 	//realizo el envio de la solicitid vía correo
 	$asunto			 =	'Mensaje de contacto - '._NOMBRE_EMPRESA;
-	
-	$envio			 =	$funciones->SendMAIL($paraQuien,$asunto,$mensaje_armado,'',_SMTP_USER,_NOMBRE_EMPRESA);
-	if($envio)
+
+	$envio			 =	$funciones->SendMAIL(_MAIL_ADMIN,$asunto,$mensaje_armado,'',_SMTP_USER,_NOMBRE_EMPRESA);
+	if($envio == 1)
 	{
 		$salida = array("mensaje"=>"Gracias por contactarnos, pronto estaremos en contacto con usted.",
 						    "continuar"=>1,
