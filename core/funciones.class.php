@@ -1475,5 +1475,42 @@ class Funciones
 	    }
 	    return false;
 	}
+
+	function deduceEstado($estado="")
+	{
+		$estados[1] = "RECIBIDO";
+		$estados[2] = "ANALIZANDO";
+		$estados[8] = "ASIGNA COSTO";
+		$estados[3] = "PERSONA ENVIADA";
+		$estados[4] = "CANCELADA";
+		$estados[5] = "COMPLETADA";
+		$estados[6] = "RECHAZADA POR USUARIO";
+		$estados[7] = "APROBADA POR USUARIO";
+		
+		if($estado == "")
+		{
+			return $estados;
+		}
+		else
+		{
+			return $estados[$estado];
+		}
+	}
+
+	function insertaTransaccion($estadoActual,$nuevoEstado,$idSolicitud,$usuario,$texto)
+	{
+		global $db;
+		$queryTransaccion	=	sprintf("INSERT INTO transacciones (idSolicitud,idUsuario,idEstado,fecha,textoTransaccion) 
+											VALUES('%s','%s','%s','%s','%s')",
+											$idSolicitud,
+											$usuario,
+											$nuevoEstado,
+											date("Y-m-d H:i:s"),
+											$texto);
+		if($estadoActual != $nuevoEstado)
+		{
+			$resultadoTra		=	$db->Execute($queryTransaccion);
+		}
+	}
 }
 ?>

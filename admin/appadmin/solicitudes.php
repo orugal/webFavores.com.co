@@ -8,44 +8,104 @@
 require('../core/PHPPaging.lib.php');
 global $db;
 global $id;
+global $funciones;
 extract($_GET);
 $plantilla = 0;
-$estados[1] = "RECIBIDO";
-$estados[2] = "ASIGNADA A FUNCIONARIO";
-$estados[3] = "PERSONA ENVIADA";
-$estados[4] = "CANCELADA";
-$estados[5] = "COMPLETADA";
-$estados[6] = "RECHAZADA POR USUARIO";
+$estados 	= $funciones->deduceEstado();
 
 if(isset($idSolicitud))
 {
-	$personas = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE perfil=3 AND estado=1 AND eliminado=0"));
 
-	$plantilla     = 2;
-	$filtroPerfil  = " AND s.idSolicitud=".$idSolicitud;
-	$permitoVision = false;
-	//busco la solicitud que se haya seleccionado
-	$query	=	sprintf("SELECT * FROM solicitudes s
-						 INNER JOIN usuarios u ON s.idusuario=u.idusuario
-						 INNER JOIN principal p on p.id=s.servicio
-						 WHERE s.eliminado = 0 
-						 %s
-						 ORDER BY s.idSolicitud DESC",$filtroPerfil);
-	//echo $query;
-	$resultado = $db->GetAll($query);
-	//var_dump($resultado);
-	//valido si es un perfil 3 para verificar que la solicitud sea de el
-	if($_SESSION['login']['perfil'] == 3)
-	{
 		
-		if($resultado[0]['idPrestador'] == $_SESSION['login']['idusuario'])
+
+		$personas = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE perfil=3 AND estado=1 AND eliminado=0"));
+
+		$plantilla     = 2;
+		$filtroPerfil  = " AND s.idSolicitud=".$idSolicitud;
+		$permitoVision = false;
+		//busco la solicitud que se haya seleccionado
+		$query	=	sprintf("SELECT u.*,p.*,s.*,s.estado as estadoSol FROM solicitudes s
+							 INNER JOIN usuarios u ON s.idusuario=u.idusuario
+							 INNER JOIN principal p on p.id=s.servicio
+							 WHERE s.eliminado = 0 
+							 %s
+							 ORDER BY s.idSolicitud DESC",$filtroPerfil);
+		//echo $query;
+		$resultado = $db->GetAll($query);
+
+
+		$transacciones = $db->GetAll(sprintf("SELECT * FROM transacciones t 
+										INNER JOIN usuarios u ON u.idusuario=t.idUsuario
+										WHERE idSolicitud=%s",$idSolicitud));
+
+
+		//var_dump($resultado);
+		//valido si es un perfil 3 para verificar que la solicitud sea de el
+		if($_SESSION['login']['perfil'] == 3)
 		{
-			$permitoVision = true;	
+			
+			if($resultado[0]['idPrestador'] == $_SESSION['login']['idusuario'])
+			{
+				$permitoVision = true;	
+			}
 		}
-	}
-	else
+		else
+		{
+			$permitoVision = true;
+		}
+
+		///envio de la respuesta
+	if(isset($_POST['enviar']))
 	{
-		$permitoVision = true;
+		extract($_POST);
+
+		
+		$estadoActual = $resultado[0]['estadoSol'];
+		//procedo a insertar en la base de datos se la solicitud
+		$queryUpdate = sprintf("UPDATE solicitudes SET idPrestador='%s', costo='%s',estado='%s' WHERE idSolicitud=%s",$idPrestador,$costo,$estado,$idSolicitud);
+		//die($queryUpdate);
+		$resultado   = $db->Execute($queryUpdate);
+
+		//si escribe algo en el contenido guardará una transacción
+		if(trim($contenido) != "")
+		{
+			$queryTransaccion	=	sprintf("INSERT INTO transacciones (idSolicitud,idUsuario,idEstado,fecha,textoTransaccion) 
+											VALUES('%s','%s','%s','%s','%s')",
+											$idSolicitud,
+											$_SESSION['login']['idusuario'],
+											$estado,
+											date("Y-m-d H:i:s"),
+											$contenido);
+			$resultadoTra		=	$db->Execute($queryTransaccion);
+		}
+		else
+		{
+			$funciones->insertaTransaccion($estadoActual,$estado,$idSolicitud,$_SESSION['login']['idusuario'],"Cambio de estado de la solicitud");
+		}
+
+		if($resultado > 0)
+		{
+			/*//al enviar una transacción desde la web debo notificar al usuario que envio por medio del mail
+			$queryInfoUsuario = $db->GetAll(sprintf("SELECT * FROM usuarios WHERE idusuario=%s",$resultado[0]["idUsuario"]));
+			$dataPrestador = $queryInfoUsuario[0];
+			//ahora procedo a enviar un mail.
+
+			$mensaje_armado	 =	'Se ha enviado respuesta de una solicitud de '._NOMBRE_EMPRESA.':<br><br><br>';
+			$mensaje_armado	.= 'Con respecto a la solicitud <strong>NRO:'.$resultado[0]['idSolicitud'].'</strong><br>';*/
+
+
+
+			echo "<script>alert('Se ha enviado la información al usuario.');document.location='"._DOMINIO."admin/index.php?id=1324&idSolicitud=".$idSolicitud."';</script>";
+		}
+		else
+		{
+			echo "<script>alert('No se ha podido enviar la informació al usuario.');document.location='"._DOMINIO."admin/index.php?id=1324&idSolicitud=".$idSolicitud."';</script>";
+		}
+
+		//estado
+		//idPrestador
+		//costo
+		//enviar
 	}
 
 
@@ -190,43 +250,81 @@ else
 					</div>
 				<?php } ?>
 			</div>
+				<form method="post" action="">
 			<div class="row">
-				<div class="col col-lg-12 text-center">
-					<h4>GESTIONAR</h4>
-				</div>
-				<div class="col col-lg-4">
-					<div class="form-group">
-						<label class="control-label" for="nombreLista">ESTADO</label>
-						<select id="estado" name="estado" class="form-control">
-							<?php foreach($estados as $llave=>$est){ ?>
-								<option value="<?php echo $llave ?>" <?php if($resultado[0]['estado'] == $llave){ ?> selected <?php }?>><?php echo $est ?></option>
-							<?php } ?>
-						</select>
+					<div class="col col-lg-12 text-center">
+						<h4>GESTIONAR</h4>
 					</div>
-				</div>
-				<div class="col col-lg-4">
-					<div class="form-group">
-						<label class="control-label" for="nombreLista">MOTORIZADO</label>
-						<select id="idPrestador" name="idPrestador" class="form-control">
-							<?php foreach($personas as $pe){ ?>
-								<option value="<?php echo $pe['idusuario'] ?>" <?php if($pe['idusuario'] == $resultado[0]['idPrestador']){ ?> selected <?php }?>><?php echo $pe['nombres']." ".$pe['apellidos'] ?></option>
-							<?php } ?>
-						</select>
+					<div class="col col-lg-4">
+						<div class="form-group">
+							<label class="control-label" for="nombreLista">ESTADO</label>
+							<select id="estado" name="estado" class="form-control" <?php if($resultado[0]['estadoSol'] == 4 or $resultado[0]['estadoSol'] == 5 or $resultado[0]['estadoSol'] == 6){?> disabled <?php }?>>
+								<?php foreach($estados as $llave=>$est){ ?>
+									<option value="<?php echo $llave ?>" <?php if($resultado[0]['estadoSol'] == $llave){ ?> selected <?php }?>><?php echo $est ?></option>
+								<?php } ?>
+							</select>
+						</div>
 					</div>
-				</div>
-				<div class="col col-lg-4">
-					<div class="form-group">
-						<label class="control-label" for="nombreLista">COSTO DEL SERVICIO</label>
-						<input type="costo" id="idPrestador" placeholder="Sin . , $" name="costo" class="form-control" value="<?php echo $resultado[0]['costo'] ?>"/>
+					<div class="col col-lg-4">
+						<div class="form-group">
+							<label class="control-label" for="nombreLista">MOTORIZADO</label>
+							<select id="idPrestador" name="idPrestador" class="form-control" <?php if($resultado[0]['estadoSol'] == 4 or $resultado[0]['estadoSol'] == 5 or $resultado[0]['estadoSol'] == 6){?> disabled <?php }?>>
+								<option value="">SELECCIONE...</option>
+								<?php foreach($personas as $pe){ ?>
+									<option value="<?php echo $pe['idusuario'] ?>" <?php if($pe['idusuario'] == $resultado[0]['idPrestador']){ ?> selected <?php }?>><?php echo $pe['nombres']." ".$pe['apellidos'] ?></option>
+								<?php } ?>
+							</select>
+						</div>
 					</div>
-				</div>
-
-				<div class="col col-lg-12 text-center">
-					<div class="form-group">
-						<button class="btn btn-primary" type="submit">ENVIAR</button>
+					<div class="col col-lg-4">
+						<div class="form-group">
+							<label class="control-label" for="nombreLista">COSTO DEL SERVICIO</label>
+							<input <?php if($resultado[0]['estadoSol'] == 4 or $resultado[0]['estadoSol'] == 5 or $resultado[0]['estadoSol'] == 6){?> disabled <?php }?> type="text" id="costo" placeholder="Sin . , $" name="costo" class="form-control" value="<?php echo $resultado[0]['costo'] ?>"/>
+						</div>
 					</div>
-				</div>
+					<div class="col col-lg-12">
+						<div class="form-group">
+							<label class="control-label" for="contenido">HACER UNA PREGUNTA AL USUARIO</label>
+							<textarea id="contenido" class="form-control" rows="3" style="width: 100%;margin:0 0 5% 0;padding: 1%"  name="contenido" <?php if($resultado[0]['estadoSol'] == 4 or $resultado[0]['estadoSol'] == 5 or $resultado[0]['estadoSol'] == 6){?> disabled <?php }?> placeholder="Puede realizar preguntas al usuario para aclarar las condiciones del servicio."></textarea>
+						</div>
+					</div>
+					<?php if($resultado[0]['estadoSol'] != 4 and $resultado[0]['estadoSol'] != 5 and $resultado[0]['estadoSol'] != 6){?>
+						<div class="col col-lg-12 text-center">
+							<div class="form-group">
+								<button class="btn btn-primary" type="submit" name="enviar">ENVIAR INFORMACI&Oacute;N</button>
+							</div>
+						</div>
+					<?php }?>
 			</div>
+				</form>
+
+			<?php if(count($transacciones) > 0){ ?>
+				<div class="row">
+					<div class="col col-lg-12"><br>	
+						<h4><center>MENSAJES ENVIADOS ENTRE EL USUARIO Y EL PRESTADOR.</center></h4><br>
+						<dl class="dl-horizontal">
+						  <?php foreach($transacciones as $tr){ 
+						  		$estadosTr 	= $funciones->deduceEstado($tr['idEstado']);
+
+						  		$pedazos11			=  	explode(" ",$tr['fecha']);
+								$pedazos21 			=   explode("-",$pedazos11[0]);
+								$fechaTr 		=	$pedazos21[2]." de ".$funciones->TraducirMes($pedazos21[1])." de ".$pedazos21[0];
+						  	?>
+						  	<dt style="text-align: left">
+						  		<?php echo $tr['nombres']." ".$tr['apellidos'] ?><br>
+						  		<span class="small" style="font-weight: normal"><?php echo $fechaTr ?></span><br>
+								<span class="badge"><?php echo $estadosTr ?></span>
+						  	</dt>
+						  	<dd>
+						  	<?php echo $tr['textoTransaccion'] ?><br>
+						  	</dd>
+						  	<br>
+						  <?php } ?>
+						</dl>
+					</div>
+				</div>
+			<?php } ?>
+
 			<!--<blockquote>
 			<p>
 			Tipo de soliditud: <?php echo utf8_encode($resultado[0]['titulo']) ?></p>
